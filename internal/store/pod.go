@@ -162,12 +162,13 @@ func createPodContainerResourceLimitsFamilyGenerator() generator.FamilyGenerator
 
 			for _, c := range p.Spec.Containers {
 				lim := c.Resources.Limits
+				phase := p.Status.Phase
 
 				for resourceName, val := range lim {
 					switch resourceName {
 					case v1.ResourceCPU:
 						ms = append(ms, &metric.Metric{
-							LabelValues: []string{c.Name, p.Spec.NodeName, sanitizeLabelName(string(resourceName)), string(constant.UnitCore)},
+							LabelValues: []string{c.Name, p.Spec.NodeName, sanitizeLabelName(string(resourceName)), string(constant.UnitCore),string(phase)},
 							Value:       float64(val.MilliValue()) / 1000,
 						})
 					case v1.ResourceStorage:
@@ -176,26 +177,26 @@ func createPodContainerResourceLimitsFamilyGenerator() generator.FamilyGenerator
 						fallthrough
 					case v1.ResourceMemory:
 						ms = append(ms, &metric.Metric{
-							LabelValues: []string{c.Name, p.Spec.NodeName, sanitizeLabelName(string(resourceName)), string(constant.UnitByte)},
+							LabelValues: []string{c.Name, p.Spec.NodeName, sanitizeLabelName(string(resourceName)), string(constant.UnitByte),string(phase)},
 							Value:       float64(val.Value()),
 						})
 					default:
 						if isHugePageResourceName(resourceName) {
 							ms = append(ms, &metric.Metric{
-								LabelValues: []string{c.Name, p.Spec.NodeName, sanitizeLabelName(string(resourceName)), string(constant.UnitByte)},
+								LabelValues: []string{c.Name, p.Spec.NodeName, sanitizeLabelName(string(resourceName)), string(constant.UnitByte),string(phase)},
 								Value:       float64(val.Value()),
 							})
 						}
 						if isAttachableVolumeResourceName(resourceName) {
 							ms = append(ms, &metric.Metric{
 								Value:       float64(val.Value()),
-								LabelValues: []string{c.Name, p.Spec.NodeName, sanitizeLabelName(string(resourceName)), string(constant.UnitByte)},
+								LabelValues: []string{c.Name, p.Spec.NodeName, sanitizeLabelName(string(resourceName)), string(constant.UnitByte),string(phase)},
 							})
 						}
 						if isExtendedResourceName(resourceName) {
 							ms = append(ms, &metric.Metric{
 								Value:       float64(val.Value()),
-								LabelValues: []string{c.Name, p.Spec.NodeName, sanitizeLabelName(string(resourceName)), string(constant.UnitInteger)},
+								LabelValues: []string{c.Name, p.Spec.NodeName, sanitizeLabelName(string(resourceName)), string(constant.UnitInteger),string(phase)},
 							})
 
 						}
@@ -204,7 +205,7 @@ func createPodContainerResourceLimitsFamilyGenerator() generator.FamilyGenerator
 			}
 
 			for _, metric := range ms {
-				metric.LabelKeys = []string{"container", "node", "resource", "unit"}
+				metric.LabelKeys = []string{"container", "node", "resource", "unit","pod_phase"}
 			}
 
 			return &metric.Family{
@@ -225,12 +226,13 @@ func createPodContainerResourceRequestsFamilyGenerator() generator.FamilyGenerat
 
 			for _, c := range p.Spec.Containers {
 				req := c.Resources.Requests
+				phase := p.Status.Phase
 
 				for resourceName, val := range req {
 					switch resourceName {
 					case v1.ResourceCPU:
 						ms = append(ms, &metric.Metric{
-							LabelValues: []string{c.Name, p.Spec.NodeName, sanitizeLabelName(string(resourceName)), string(constant.UnitCore)},
+							LabelValues: []string{c.Name, p.Spec.NodeName, sanitizeLabelName(string(resourceName)), string(constant.UnitCore), string(phase)},
 							Value:       float64(val.MilliValue()) / 1000,
 						})
 					case v1.ResourceStorage:
@@ -239,25 +241,25 @@ func createPodContainerResourceRequestsFamilyGenerator() generator.FamilyGenerat
 						fallthrough
 					case v1.ResourceMemory:
 						ms = append(ms, &metric.Metric{
-							LabelValues: []string{c.Name, p.Spec.NodeName, sanitizeLabelName(string(resourceName)), string(constant.UnitByte)},
+							LabelValues: []string{c.Name, p.Spec.NodeName, sanitizeLabelName(string(resourceName)), string(constant.UnitByte),string(phase)},
 							Value:       float64(val.Value()),
 						})
 					default:
 						if isHugePageResourceName(resourceName) {
 							ms = append(ms, &metric.Metric{
-								LabelValues: []string{c.Name, p.Spec.NodeName, sanitizeLabelName(string(resourceName)), string(constant.UnitByte)},
+								LabelValues: []string{c.Name, p.Spec.NodeName, sanitizeLabelName(string(resourceName)), string(constant.UnitByte),string(phase)},
 								Value:       float64(val.Value()),
 							})
 						}
 						if isAttachableVolumeResourceName(resourceName) {
 							ms = append(ms, &metric.Metric{
-								LabelValues: []string{c.Name, p.Spec.NodeName, sanitizeLabelName(string(resourceName)), string(constant.UnitByte)},
+								LabelValues: []string{c.Name, p.Spec.NodeName, sanitizeLabelName(string(resourceName)), string(constant.UnitByte),string(phase)},
 								Value:       float64(val.Value()),
 							})
 						}
 						if isExtendedResourceName(resourceName) {
 							ms = append(ms, &metric.Metric{
-								LabelValues: []string{c.Name, p.Spec.NodeName, sanitizeLabelName(string(resourceName)), string(constant.UnitInteger)},
+								LabelValues: []string{c.Name, p.Spec.NodeName, sanitizeLabelName(string(resourceName)), string(constant.UnitInteger),string(phase)},
 								Value:       float64(val.Value()),
 							})
 						}
@@ -266,7 +268,7 @@ func createPodContainerResourceRequestsFamilyGenerator() generator.FamilyGenerat
 			}
 
 			for _, metric := range ms {
-				metric.LabelKeys = []string{"container", "node", "resource", "unit"}
+				metric.LabelKeys = []string{"container", "node", "resource", "unit", "pod_phase"}
 			}
 
 			return &metric.Family{
